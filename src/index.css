@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: "Chakra Petch", system-ui, sans-serif;
+    --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    background-color: #07090e;
+    color: #f1f5f9;
+    touch-action: manipulation;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Speed lines radial overlay animation during supersonic boost */
+@keyframes speedLinesFlicker {
+  0%, 100% { opacity: 0.72; transform: scale(1); }
+  50% { opacity: 0.92; transform: scale(1.03); }
+}
+
+.speed-lines-active {
+  animation: speedLinesFlicker 0.16s ease-in-out infinite;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Nitro Goal Arena",
+  "description": "A cinematic 3D vehicle football arena featuring PBR sports cars, an esports stadium, dynamic lighting, nitro physics, and multi-tier graphics optimization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
