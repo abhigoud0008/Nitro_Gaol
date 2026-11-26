@@ -158,6 +158,11 @@ export function TitleScreen({
             <span>Settings</span>
           </button>
         </div>
+        <nav aria-label="Site information" className="pointer-events-auto flex flex-wrap gap-x-3 gap-y-1 text-xs text-sky-200" onKeyDown={(event) => event.stopPropagation()}>
+          {([['about','About'],['how-to-play','How to Play'],['privacy','Privacy'],['terms','Terms'],['contact','Contact'],['cookies','Cookie Choices']] as const).map(([slug,label]) => (
+            <a key={slug} href={`/${slug}.html`} className="underline hover:text-white">{label}</a>
+          ))}
+        </nav>
       </main>
 
       {/* Bottom gradient scrim + flat borderless control hints */}
