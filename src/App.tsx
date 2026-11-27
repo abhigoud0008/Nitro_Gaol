@@ -19,6 +19,9 @@ import { TitleScreen } from './components/TitleScreen';
 import { GarageOverlay } from './components/GarageOverlay';
 import { MatchHud } from './components/MatchHud';
 import { MobileControls } from './components/MobileControls';
+import { ControlLayoutEditor } from './components/ControlLayoutEditor';
+import { loadMobileLayout, saveMobileLayout } from './game/mobileLayout';
+import type { MobileLayout } from './game/mobileLayout';
 import { SettingsModal } from './components/SettingsModal';
 import { MatchEndModal, PauseModal } from './components/PauseAndEndModals';
 import { RotatePrompt } from './components/RotatePrompt';
@@ -64,6 +67,8 @@ export default function App() {
   const [loadProgress, setLoadProgress] = useState(10);
   const [loadLabel, setLoadLabel] = useState('Initializing Nitro Goal Arena');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [controlEditorOpen, setControlEditorOpen] = useState(false);
+  const [mobileLayout, setMobileLayout] = useState<MobileLayout>(loadMobileLayout);
 
   const [settings, setSettings] = useState<UserSettings>(INITIAL_SETTINGS);
   const [selectedArchetype, setSelectedArchetype] =
@@ -217,14 +222,15 @@ export default function App() {
       boostTextEl: boostTextRef.current,
       supersonicEl: supersonicRef.current,
     });
-  }, [screenState]);
+  }, [screenState, showMobileControls]);
 
   // Global keyboard shortcuts (Title start, Pause, Mute, Reset)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (settingsOpen) {
         if (e.code === 'Escape') {
-          setSettingsOpen(false);
+          if (controlEditorOpen) setControlEditorOpen(false);
+          else setSettingsOpen(false);
         }
         return;
       }
@@ -258,7 +264,7 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [settingsOpen, startMatch]);
+  }, [settingsOpen, controlEditorOpen, startMatch]);
 
   const handleUpdateSettings = (next: UserSettings) => {
     setSettings(next);
@@ -275,9 +281,9 @@ export default function App() {
     engineRef.current?.selectVehicle(archetype, finish);
   };
 
-  const handleTouchInput = (partial: Partial<InputState>) => {
+  const handleTouchInput = useCallback((partial: Partial<InputState>) => {
     engineRef.current?.setTouchControlsInput(partial);
-  };
+  }, []);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#07090e]">
@@ -346,6 +352,7 @@ export default function App() {
             ballCam={ballCam}
             muted={settings.muted}
             showMobileControls={showMobileControls}
+            mobileLayout={mobileLayout}
             speedRef={speedRef}
             boostArcRef={boostArcRef}
             boostTextRef={boostTextRef}
@@ -363,7 +370,8 @@ export default function App() {
             onSkipReplay={() => engineRef.current?.skipReplay()}
           />
           {showMobileControls && (
-            <MobileControls onInputChange={handleTouchInput} />
+            <MobileControls layout={mobileLayout} onInputChange={handleTouchInput}
+              ballCam={ballCam} onToggleBallCam={() => engineRef.current?.toggleBallCam()} />
           )}
         </>
       )}
@@ -397,17 +405,29 @@ export default function App() {
         />
       )}
 
-      {settingsOpen && (
+      {settingsOpen && !controlEditorOpen && (
         <SettingsModal
           settings={settings}
           capabilities={capabilities}
           resolvedGraphics={resolvedGraphics}
           onUpdate={handleUpdateSettings}
+          onCustomizeControls={() => setControlEditorOpen(true)}
           onClose={() => setSettingsOpen(false)}
         />
       )}
 
-      {isPortraitMobile && !portraitDismissed && screenState !== 'loading' && (
+      {settingsOpen && controlEditorOpen && (
+        <ControlLayoutEditor initialLayout={mobileLayout}
+          onCancel={() => setControlEditorOpen(false)}
+          onSave={(layout) => {
+            if (!saveMobileLayout(layout)) return false;
+            setMobileLayout(layout);
+            setControlEditorOpen(false);
+            return true;
+          }} />
+      )}
+
+      {isPortraitMobile && !portraitDismissed && !controlEditorOpen && screenState !== 'loading' && (
         <RotatePrompt
           onRequestLandscape={() => {
             void tryLockLandscape();

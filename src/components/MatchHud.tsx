@@ -1,11 +1,15 @@
 import { Camera, Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import type { MatchStats } from '../game/types';
+import { controlRect } from '../game/mobileLayout';
+import type { MobileLayout } from '../game/mobileLayout';
+import { controlAreaStyle, useControlArea } from './ControlLayoutArea';
 
 interface MatchHudProps {
   stats: MatchStats;
   ballCam: boolean;
   muted: boolean;
   showMobileControls: boolean;
+  mobileLayout: MobileLayout;
   speedRef: React.RefObject<HTMLSpanElement | null>;
   boostArcRef: React.RefObject<SVGCircleElement | null>;
   boostTextRef: React.RefObject<HTMLSpanElement | null>;
@@ -22,6 +26,7 @@ export function MatchHud({
   ballCam,
   muted,
   showMobileControls,
+  mobileLayout,
   speedRef,
   boostArcRef,
   boostTextRef,
@@ -32,6 +37,8 @@ export function MatchHud({
   onResetKickoff,
   onSkipReplay,
 }: MatchHudProps) {
+  const { ref: gaugeAreaRef, area: gaugeArea } = useControlArea(showMobileControls);
+  const gaugeRect = controlRect('gauge', mobileLayout, gaugeArea);
   const mins = Math.floor(Math.max(0, stats.timeRemaining) / 60);
   const secs = Math.floor(Math.max(0, stats.timeRemaining) % 60);
   const clockStr = stats.isOvertime
@@ -70,7 +77,7 @@ export function MatchHud({
       <div className="relative z-10 flex items-start justify-between gap-2">
         {/* Left: Ball Cam Indicator */}
         <div className="pointer-events-auto">
-          <button
+          {showMobileControls ? <div className="w-10 sm:w-24" aria-hidden="true" /> : <button
             type="button"
             tabIndex={-1}
             onClick={(e) => {
@@ -87,7 +94,7 @@ export function MatchHud({
             <Camera className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">Ball Cam [C]</span>
             <span className="sm:hidden">{ballCam ? 'Ball' : 'Car'}</span>
-          </button>
+          </button>}
         </div>
 
         {/* Center: Futuristic Broadcast Scoreboard */}
@@ -226,7 +233,7 @@ export function MatchHud({
       {/* Bottom Row: Minimal Speedometer & Animated Boost Gauge */}
       <div
         className={`relative z-10 flex items-end justify-between ${
-          showMobileControls ? 'mb-[156px] min-[560px]:mb-0 min-[560px]:mr-[156px] sm:mr-[180px]' : ''
+          showMobileControls ? 'min-h-[64px]' : ''
         }`}
       >
         {!showMobileControls && (
@@ -235,7 +242,9 @@ export function MatchHud({
           </div>
         )}
 
-        <div className="ml-auto flex items-center gap-3 rounded-xl border border-white/15 bg-[#090d16]/90 px-3.5 py-2 shadow-xl sm:gap-4 sm:px-4 sm:py-2.5">
+        <div ref={gaugeAreaRef} style={showMobileControls ? controlAreaStyle : undefined} className={showMobileControls ? 'pointer-events-none' : 'ml-auto'}>
+        <div style={showMobileControls ? { position: 'absolute', left: gaugeRect.x, top: gaugeRect.y, width: gaugeRect.width, height: gaugeRect.height, opacity: mobileLayout.opacity, visibility: gaugeArea.width ? 'visible' : 'hidden' } : undefined}
+          className={showMobileControls ? 'flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-[#090d16]/90 px-1 shadow-xl' : 'ml-auto flex items-center gap-3 rounded-xl border border-white/15 bg-[#090d16]/90 px-3.5 py-2 shadow-xl sm:gap-4 sm:px-4 sm:py-2.5'}>
           {/* Speedometer */}
           <div className="text-right">
             <span
@@ -250,7 +259,7 @@ export function MatchHud({
           </div>
 
           {/* Animated SVG Arc Nitro Boost Meter */}
-          <div className="relative flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16">
+          <div className={showMobileControls ? 'relative flex aspect-square w-[47%] max-w-16 items-center justify-center' : 'relative flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16'}>
             <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
               <circle
                 cx="50"
@@ -285,6 +294,7 @@ export function MatchHud({
               </span>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

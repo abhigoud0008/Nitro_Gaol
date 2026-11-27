@@ -14,6 +14,7 @@ interface SettingsModalProps {
   resolvedGraphics: ResolvedGraphicsConfig | null;
   onUpdate: (next: UserSettings) => void;
   onClose: () => void;
+  onCustomizeControls: () => void;
 }
 
 const PRESET_DESCRIPTIONS: Record<GraphicsSettingMode, string> = {
@@ -30,6 +31,7 @@ export function SettingsModal({
   resolvedGraphics,
   onUpdate,
   onClose,
+  onCustomizeControls,
 }: SettingsModalProps) {
   return (
     <div
@@ -136,6 +138,11 @@ export function SettingsModal({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <button type="button" onClick={onCustomizeControls} className="w-full rounded-lg border border-sky-400/40 bg-sky-500/15 px-4 py-3 text-sm font-bold text-sky-200 hover:bg-sky-500/25">Customize Controls</button>
+            <p className="text-xs text-slate-400">Move touch buttons and the nitro gauge, adjust size and opacity. Saved on this browser. Landscape recommended.</p>
           </div>
 
           {/* Toggles */}
